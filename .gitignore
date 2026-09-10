@@ -1,0 +1,13 @@
+# ─── Credenciales y archivos sensibles: NUNCA versionar ───
+.env
+*.env.local
+*.env.production
+
+# ─── IDE ───
+.idea/
+*.iml
+
+# ─── Residuales en la raíz del repo (no usados por el despliegue) ───
+/indextest.txt
+/package-lock.json
+/railway.toml

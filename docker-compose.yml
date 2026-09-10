@@ -1,0 +1,74 @@
+name: eventos
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eventos}
+      POSTGRES_USER: ${POSTGRES_USER:-eventos_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cambiame123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eventos_user} -d ${POSTGRES_DB:-eventos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Buzón de correo local: recibe todos los emails y los muestra en
+  # http://localhost:8025. No requiere cuenta SMTP.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025" # Interfaz web
+      - "1025:1025" # SMTP del contenedor
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB:-eventos}
+      POSTGRES_USER: ${POSTGRES_USER:-eventos_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cambiame123}
+      JWT_SECRET: ${JWT_SECRET:-cambia_esta_clave_por_una_muy_larga_y_aleatoria}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      # Correo: por defecto a Mailpit (buzón local http://localhost:8025, sin cuenta SMTP).
+      # Mailpit no usa auth ni STARTTLS, por eso se desactivan vía JAVA_TOOL_OPTIONS
+      # (propiedad JVM en tiempo de arranque, sin tocar código).
+      # Para Gmail real: cambia MAIL_HOST/MAIL_PORT/MAIL_USERNAME/MAIL_PASSWORD/MAIL_FROM
+      # y ajusta JAVA_TOOL_OPTIONS (auth=true y starttls.enable/required=true).
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@eventos.local}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:-"-Dspring.mail.properties.mail.smtp.auth=false -Dspring.mail.properties.mail.smtp.starttls.enable=false -Dspring.mail.properties.mail.smtp.starttls.required=false"}
+      CERT_ORGANIZACION: ${CERT_ORGANIZACION:-Gestion de Eventos S.A.}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8081}:8080" # API directa: http://localhost:8081
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # /api => nginx (dentro del contenedor) proxya al servicio backend.
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    ports:
+      - "${APP_PORT:-3000}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:

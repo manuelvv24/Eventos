@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificado de Participación</title>
+    <!-- Fuentes tipográficas elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet" />
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #fbf9f8;
+            font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
+            color: #1b1c1c;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .certificate-container {
+            width: 297mm;
+            height: 210mm;
+            margin: 0 auto;
+            position: relative;
+            background-color: #fbf9f8;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Patrón de fondo Guilloche sutil */
+        .guilloche-pattern {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0.03;
+            background-image: repeating-linear-gradient(45deg, #0b1a39 0, #0b1a39 1px, transparent 0, transparent 50%),
+                              repeating-linear-gradient(-45deg, #0b1a39 0, #0b1a39 1px, transparent 0, transparent 50%);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        /* Marco Doble elegante */
+        .border-outer {
+            position: absolute;
+            top: 12mm;
+            left: 12mm;
+            right: 12mm;
+            bottom: 12mm;
+            border: 3px solid #0b1a39;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .border-inner {
+            position: absolute;
+            top: 15mm;
+            left: 15mm;
+            right: 15mm;
+            bottom: 15mm;
+            border: 1px solid #7b5800;
+            box-sizing: border-box;
+            z-index: 11;
+        }
+
+        /* Esquinas L decorativas */
+        .corner-decoration {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            z-index: 20;
+        }
+
+        .corner-tl { top: 10mm; left: 10mm; border-top: 4px solid #0b1a39; border-left: 4px solid #0b1a39; }
+        .corner-tr { top: 10mm; right: 10mm; border-top: 4px solid #0b1a39; border-right: 4px solid #0b1a39; }
+        .corner-bl { bottom: 10mm; left: 10mm; border-bottom: 4px solid #0b1a39; border-left: 4px solid #0b1a39; }
+        .corner-br { bottom: 10mm; right: 10mm; border-bottom: 4px solid #0b1a39; border-right: 4px solid #0b1a39; }
+
+        .corner-inner-tl { position: absolute; top: 4px; left: 4px; width: 30px; height: 30px; border-top: 1px solid #7b5800; border-left: 1px solid #7b5800; }
+        .corner-inner-tr { position: absolute; top: 4px; right: 4px; width: 30px; height: 30px; border-top: 1px solid #7b5800; border-right: 1px solid #7b5800; }
+        .corner-inner-bl { position: absolute; bottom: 4px; left: 4px; width: 30px; height: 30px; border-bottom: 1px solid #7b5800; border-left: 1px solid #7b5800; }
+        .corner-inner-br { position: absolute; bottom: 4px; right: 4px; width: 30px; height: 30px; border-bottom: 1px solid #7b5800; border-right: 1px solid #7b5800; }
+
+        /* Contenedor de contenido estructurado */
+        .content-wrap {
+            position: relative;
+            z-index: 30;
+            width: 100%;
+            padding: 18mm 25mm 14mm 25mm;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .logo-img {
+            max-height: 52px;
+            max-width: 210px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+
+        .org-name {
+            font-size: 13px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #7b5800;
+        }
+
+        .cert-title {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0b1a39;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 6px 0 10px 0;
+        }
+
+        .recipient-name {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: #0b1a39;
+            margin: 8px 0 10px 0;
+            line-height: 1.1;
+        }
+
+        .separator-container {
+            width: 65%;
+            max-width: 520px;
+            height: 1px;
+            background-color: #c5c6cf;
+            margin: 10px auto 14px auto;
+            position: relative;
+        }
+
+        .separator-diamond {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: #7b5800;
+            margin-left: -4px;
+            margin-top: -4px;
+            transform: rotate(45deg);
+        }
+
+        .body-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #45464e;
+            max-width: 820px;
+            margin: 10px auto;
+        }
+
+        .body-highlight {
+            font-weight: 700;
+            color: #0b1a39;
+        }
+
+        .issue-date {
+            font-size: 14px;
+            color: #45464e;
+            margin-top: 8px;
+        }
+
+        /* Footer Table */
+        .footer-table {
+            width: 100%;
+            margin-top: 14mm;
+            border-collapse: collapse;
+        }
+
+        .label-caps {
+            font-size: 11px;
+            letter-spacing: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #45464e;
+        }
+
+        .code-box {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12px;
+            color: #0b1a39;
+            background-color: #efeded;
+            border: 1px solid #c5c6cf;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        .sign-line {
+            width: 130px;
+            height: 1px;
+            background-color: #0b1a39;
+            margin: 4px auto 4px auto;
+        }
+
+        .sign-img {
+            height: 38px;
+            max-width: 120px;
+            margin-bottom: 2px;
+        }
+
+        .qr-box {
+            border: 1px solid #7b5800;
+            background-color: #ffffff;
+            padding: 3px;
+            display: inline-block;
+        }
+
+        .qr-img {
+            width: 65px;
+            height: 65px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="certificate-container">
+    <!-- Fondo Táctil Guilloche -->
+    <div class="guilloche-pattern"></div>
+
+    <!-- Marco Doble -->
+    <div class="border-outer" th:style="'border-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')"></div>
+    <div class="border-inner" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+
+    <!-- Decoraciones de Esquinas L -->
+    <div class="corner-decoration corner-tl" th:style="'border-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')">
+        <div class="corner-inner-tl" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+    </div>
+    <div class="corner-decoration corner-tr" th:style="'border-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')">
+        <div class="corner-inner-tr" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+    </div>
+    <div class="corner-decoration corner-bl" th:style="'border-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')">
+        <div class="corner-inner-bl" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+    </div>
+    <div class="corner-decoration corner-br" th:style="'border-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')">
+        <div class="corner-inner-br" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+    </div>
+
+    <!-- Contenido Central -->
+    <div class="content-wrap">
+        <!-- Logo opcional -->
+        <div th:if="${logoBase64 != null and !#strings.isEmpty(logoBase64)}">
+            <img th:src="${logoBase64}" alt="Logo Organización" class="logo-img" />
+        </div>
+
+        <!-- Organización & Título -->
+        <div>
+            <div class="org-name" th:style="'color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')" th:text="${organizacion}">
+                UNIVERSIDAD EAN
+            </div>
+            <h1 class="cert-title" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${tituloCertificado != null ? tituloCertificado : 'CERTIFICADO DE PARTICIPACIÓN'}">
+                CERTIFICADO DE PARTICIPACIÓN
+            </h1>
+        </div>
+
+        <!-- Destinatario -->
+        <div>
+            <p style="font-style: italic; color: #45464e; margin: 0 0 2px 0; font-size: 15px;">
+                Se otorga con distinción el presente reconocimiento a:
+            </p>
+            <h2 class="recipient-name" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${nombreCompleto}">
+                JUAN VILLAMIL
+            </h2>
+            <div class="separator-container">
+                <div class="separator-diamond" th:style="'background-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')"></div>
+            </div>
+            <p th:if="${documento != null and !#strings.isEmpty(documento)}" style="font-size: 14px; color: #45464e; margin: 6px 0 0 0; font-style: italic;"
+                        th:text="${tipoDocumento != null and !#strings.isEmpty(tipoDocumento)} ? 'identificado con ' + ${#strings.toLowerCase(tipoDocumento)} + ' ' + ${documento} : 'identificado con documento número ' + ${documento}">
+                identificado con cédula de ciudadanía 1000521258
+            </p>
+        </div>
+
+        <!-- Texto Descriptivo -->
+        <div>
+            <p class="body-text" th:utext="${textoCuerpo}">
+                Por su destacada participación en <span class="body-highlight">[Nombre del Evento Académico]</span>,
+                con una duración de <span class="body-highlight">[XX] horas</span>,
+                demostrando compromiso y excelencia académica.
+            </p>
+            <p class="issue-date" th:text="'Emitido el ' + ${fechaFormateada}">
+                Emitido el 13 de agosto de 2026
+            </p>
+        </div>
+
+        <!-- Pie de página (Firmas y Código QR) -->
+        <table class="footer-table">
+            <tr>
+                <!-- Izquierda: Código de Verificación -->
+                <td style="width: 25%; vertical-align: bottom; text-align: left;">
+                    <p class="label-caps" th:style="'color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')" style="margin: 0 0 3px 0;">Código de Verificación</p>
+                    <div class="code-box" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${codigo}">
+                        CERT-4E566F1B
+                    </div>
+                </td>
+
+                <!-- Centro: Firmas (Hasta 3) -->
+                <td style="width: 50%; vertical-align: bottom; text-align: center;">
+                    <table style="margin: 0 auto; border-collapse: collapse;">
+                        <tr>
+                            <!-- Firma 1 -->
+                            <td style="vertical-align: bottom; text-align: center; padding: 0 12px;">
+                                <div th:if="${firma1ImagenBase64 != null and !#strings.isEmpty(firma1ImagenBase64)}" style="height: 38px; margin-bottom: 2px;">
+                                    <img th:src="${firma1ImagenBase64}" class="sign-img" alt="Firma 1" />
+                                </div>
+                                <div class="sign-line" th:style="'background-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')"></div>
+                                <p class="label-caps" style="font-size: 10px; margin: 2px 0 0 0;" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${firma1Nombre}">Ernesto</p>
+                                <p style="font-size: 10px; color: #45464e; margin: 1px 0 0 0;" th:text="${firma1Cargo != null ? firma1Cargo : 'RECTOR'}">RECTOR</p>
+                            </td>
+
+                            <!-- Firma 2 (Opcional) -->
+                            <td th:if="${(firma2Cargo != null and !#strings.isEmpty(firma2Cargo)) or (firma2ImagenBase64 != null and !#strings.isEmpty(firma2ImagenBase64))}" style="vertical-align: bottom; text-align: center; padding: 0 12px;">
+                                <div th:if="${firma2ImagenBase64 != null and !#strings.isEmpty(firma2ImagenBase64)}" style="height: 38px; margin-bottom: 2px;">
+                                    <img th:src="${firma2ImagenBase64}" class="sign-img" alt="Firma 2" />
+                                </div>
+                                <div class="sign-line" th:style="'background-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')"></div>
+                                <p class="label-caps" style="font-size: 10px; margin: 2px 0 0 0;" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${firma2Nombre}">Dra. Lucía</p>
+                                <p style="font-size: 10px; color: #45464e; margin: 1px 0 0 0;" th:text="${firma2Cargo}">COORDINADORA ACADÉMICA</p>
+                            </td>
+
+                            <!-- Firma 3 (Opcional) -->
+                            <td th:if="${(firma3Cargo != null and !#strings.isEmpty(firma3Cargo)) or (firma3ImagenBase64 != null and !#strings.isEmpty(firma3ImagenBase64))}" style="vertical-align: bottom; text-align: center; padding: 0 12px;">
+                                <div th:if="${firma3ImagenBase64 != null and !#strings.isEmpty(firma3ImagenBase64)}" style="height: 38px; margin-bottom: 2px;">
+                                    <img th:src="${firma3ImagenBase64}" class="sign-img" alt="Firma 3" />
+                                </div>
+                                <div class="sign-line" th:style="'background-color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')"></div>
+                                <p class="label-caps" style="font-size: 10px; margin: 2px 0 0 0;" th:style="'color: ' + (${colorBorde} != null ? ${colorBorde} : '#0b1a39')" th:text="${firma3Nombre}">Roberto Silva</p>
+                                <p style="font-size: 10px; color: #45464e; margin: 1px 0 0 0;" th:text="${firma3Cargo}">SECRETARÍA</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+
+                <!-- Derecha: Código QR -->
+                <td style="width: 25%; vertical-align: bottom; text-align: right;">
+                    <div th:if="${qrBase64 != null}" class="qr-box" th:style="'border-color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')">
+                        <img alt="QR Code Verification" class="qr-img" th:src="${qrBase64}" />
+                    </div>
+                    <p class="label-caps" style="font-size: 8px; margin: 3px 0 0 0; text-align: right;" th:style="'color: ' + (${colorAcento} != null ? ${colorAcento} : '#7b5800')">
+                        Escanear para validar
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
